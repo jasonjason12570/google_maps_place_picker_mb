@@ -49,9 +49,9 @@ class PlacePicker extends StatefulWidget {
     this.cameraMoveDebounceInMilliseconds = 750,
     this.initialMapType = MapType.normal,
     this.enableMapTypeButton = true,
-    this.enableMyLocationButton = true,
+    this.enableMyLocationButton = false,
     this.myLocationButtonCooldown = 10,
-    this.usePinPointingSearch = true,
+    this.usePinPointingSearch = false,
     this.usePlaceDetailSearch = false,
     this.autocompleteOffset,
     this.autocompleteRadius,
@@ -67,7 +67,8 @@ class PlacePicker extends StatefulWidget {
     this.searchForInitialValue = false,
     this.forceAndroidLocationManager = false,
     this.forceSearchOnZoomChanged = false,
-    this.automaticallyImplyAppBarLeading = true,
+    this.automaticallyImplyAppBarLeading = false,
+    this.automaticallyImplyAppBarSearching = false,
     this.autocompleteOnTrailingWhitespace = false,
     this.hidePlaceDetailsWhenDraggingPin = true,
     this.onTapBack,
@@ -179,6 +180,7 @@ class PlacePicker extends StatefulWidget {
 
   /// Whether to display appbar backbutton. Defaults to true.
   final bool automaticallyImplyAppBarLeading;
+  final bool automaticallyImplyAppBarSearching;
 
   /// Will perform an autocomplete search, if set to true. Note that setting
   /// this to true, while providing a smoother UX experience, may cause
@@ -347,8 +349,7 @@ class _PlacePickerState extends State<PlacePicker> {
         widget.automaticallyImplyAppBarLeading || widget.onTapBack != null
             ? IconButton(
                 onPressed: () {
-                  if (!showIntroModal ||
-                      widget.introModalWidgetBuilder == null) {
+                  if (!showIntroModal || widget.introModalWidgetBuilder == null) {
                     if (widget.onTapBack != null) {
                       widget.onTapBack!();
                       return;
@@ -362,34 +363,35 @@ class _PlacePickerState extends State<PlacePicker> {
                 color: Colors.black.withAlpha(128),
                 padding: EdgeInsets.zero)
             : SizedBox(width: 15),
-        Expanded(
-          child: AutoCompleteSearch(
-              appBarKey: appBarKey,
-              searchBarController: searchBarController,
-              sessionToken: provider!.sessionToken,
-              hintText: widget.hintText,
-              searchingText: widget.searchingText,
-              debounceMilliseconds: widget.autoCompleteDebounceInMilliseconds,
-              onPicked: (prediction) {
-                _pickPrediction(prediction);
-              },
-              onSearchFailed: (status) {
-                if (widget.onAutoCompleteFailed != null) {
-                  widget.onAutoCompleteFailed!(status);
-                }
-              },
-              autocompleteOffset: widget.autocompleteOffset,
-              autocompleteRadius: widget.autocompleteRadius,
-              autocompleteLanguage: widget.autocompleteLanguage,
-              autocompleteComponents: widget.autocompleteComponents,
-              autocompleteTypes: widget.autocompleteTypes,
-              strictbounds: widget.strictbounds,
-              region: widget.region,
-              initialSearchString: widget.initialSearchString,
-              searchForInitialValue: widget.searchForInitialValue,
-              autocompleteOnTrailingWhitespace:
-                  widget.autocompleteOnTrailingWhitespace),
-        ),
+        widget.automaticallyImplyAppBarSearching
+            ? Expanded(
+                child: AutoCompleteSearch(
+                    appBarKey: appBarKey,
+                    searchBarController: searchBarController,
+                    sessionToken: provider!.sessionToken,
+                    hintText: widget.hintText,
+                    searchingText: widget.searchingText,
+                    debounceMilliseconds: widget.autoCompleteDebounceInMilliseconds,
+                    onPicked: (prediction) {
+                      _pickPrediction(prediction);
+                    },
+                    onSearchFailed: (status) {
+                      if (widget.onAutoCompleteFailed != null) {
+                        widget.onAutoCompleteFailed!(status);
+                      }
+                    },
+                    autocompleteOffset: widget.autocompleteOffset,
+                    autocompleteRadius: widget.autocompleteRadius,
+                    autocompleteLanguage: widget.autocompleteLanguage,
+                    autocompleteComponents: widget.autocompleteComponents,
+                    autocompleteTypes: widget.autocompleteTypes,
+                    strictbounds: widget.strictbounds,
+                    region: widget.region,
+                    initialSearchString: widget.initialSearchString,
+                    searchForInitialValue: widget.searchForInitialValue,
+                    autocompleteOnTrailingWhitespace: widget.autocompleteOnTrailingWhitespace),
+              )
+            : SizedBox(width: 5),
         SizedBox(width: 5),
       ],
     );
@@ -398,15 +400,13 @@ class _PlacePickerState extends State<PlacePicker> {
   _pickPrediction(Prediction prediction) async {
     provider!.placeSearchingState = SearchingState.Searching;
 
-    final PlacesDetailsResponse response =
-        await provider!.places.getDetailsByPlaceId(
+    final PlacesDetailsResponse response = await provider!.places.getDetailsByPlaceId(
       prediction.placeId!,
       sessionToken: provider!.sessionToken,
       language: widget.autocompleteLanguage,
     );
 
-    if (response.errorMessage?.isNotEmpty == true ||
-        response.status == "REQUEST_DENIED") {
+    if (response.errorMessage?.isNotEmpty == true || response.status == "REQUEST_DENIED") {
       if (widget.onAutoCompleteFailed != null) {
         widget.onAutoCompleteFailed!(response.status);
       }
@@ -416,7 +416,7 @@ class _PlacePickerState extends State<PlacePicker> {
     provider!.selectedPlace = PickResult.fromPlaceDetailResult(response.result);
 
     // Prevents searching again by camera movement.
-    provider!.isAutoCompleteSearching = true;
+    //provider!.isAutoCompleteSearching = true;
 
     await _moveTo(provider!.selectedPlace!.geometry!.location.lat,
         provider!.selectedPlace!.geometry!.location.lng);
@@ -440,8 +440,7 @@ class _PlacePickerState extends State<PlacePicker> {
 
   _moveToCurrentPosition() async {
     if (provider!.currentPosition != null) {
-      await _moveTo(provider!.currentPosition!.latitude,
-          provider!.currentPosition!.longitude);
+      await _moveTo(provider!.currentPosition!.latitude, provider!.currentPosition!.longitude);
     }
   }
 
@@ -449,8 +448,8 @@ class _PlacePickerState extends State<PlacePicker> {
     if (provider!.currentPosition == null) {
       return _buildMap(widget.initialPosition);
     }
-    return _buildMap(LatLng(provider!.currentPosition!.latitude,
-        provider!.currentPosition!.longitude));
+    return _buildMap(
+        LatLng(provider!.currentPosition!.latitude, provider!.currentPosition!.longitude));
   }
 
   Widget _buildMap(LatLng initialTarget) {
@@ -487,8 +486,7 @@ class _PlacePickerState extends State<PlacePicker> {
           Timer(Duration(seconds: widget.myLocationButtonCooldown), () {
             provider!.isOnUpdateLocationCooldown = false;
           });
-          await provider!
-              .updateCurrentLocation(widget.forceAndroidLocationManager);
+          await provider!.updateCurrentLocation(widget.forceAndroidLocationManager);
           await _moveToCurrentPosition();
         }
       },
@@ -505,8 +503,7 @@ class _PlacePickerState extends State<PlacePicker> {
   }
 
   Widget _buildIntroModal(BuildContext context) {
-    return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
+    return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
       return showIntroModal && widget.introModalWidgetBuilder != null
           ? Stack(children: [
               Positioned(
