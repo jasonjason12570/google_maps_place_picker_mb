@@ -30,6 +30,7 @@ class PlacePicker extends StatefulWidget {
     Key? key,
     required this.apiKey,
     this.onPlacePicked,
+    this.onPlacePickedByCamera,
     required this.initialPosition,
     this.useCurrentLocation,
     this.desiredLocationAccuracy = LocationAccuracy.high,
@@ -134,6 +135,7 @@ class PlacePicker extends StatefulWidget {
   /// If you managed to use your own [selectedPlaceWidgetBuilder], then this WILL NOT be invoked, and you need use data which is
   /// being sent with [selectedPlaceWidgetBuilder].
   final ValueChanged<PickResult>? onPlacePicked;
+  final ValueChanged<PickResultGPS>? onPlacePickedByCamera;
 
   /// optional - builds selected place's UI
   ///
@@ -493,6 +495,7 @@ class _PlacePickerState extends State<PlacePicker> {
       onMoveStart: () {
         searchBarController.reset();
       },
+      onPlacePickedByCamera: widget.onPlacePickedByCamera,
       onPlacePicked: widget.onPlacePicked,
       onCameraMoveStarted: widget.onCameraMoveStarted,
       onCameraMove: widget.onCameraMove,

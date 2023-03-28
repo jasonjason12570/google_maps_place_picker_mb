@@ -1,3 +1,4 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/geocoding.dart';
 import 'package:google_maps_webservice/places.dart';
 
@@ -86,6 +87,19 @@ class PickResult {
       utcOffset: result.utcOffset,
       website: result.website,
       reviews: result.reviews,
+    );
+  }
+}
+
+class PickResultGPS {
+  PickResultGPS({
+    this.latlng,
+  });
+  LatLng? latlng;
+
+  factory PickResultGPS.fromPlaceGPSResult(List result) {
+    return PickResultGPS(
+      latlng: LatLng(result[0], result[1]),
     );
   }
 }
