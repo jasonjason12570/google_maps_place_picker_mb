@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -57,6 +58,7 @@ class GoogleMapPlacePicker extends StatelessWidget {
     this.onCameraIdle,
     this.selectText,
     this.outsideOfPickAreaText,
+    this.initialMapStyle,
     this.zoomGesturesEnabled = true,
     this.zoomControlsEnabled = false,
     this.fullMotion = false,
@@ -85,7 +87,7 @@ class GoogleMapPlacePicker extends StatelessWidget {
   final bool? usePlaceDetailSearch;
 
   final bool? selectInitialPosition;
-
+  final bool? initialMapStyle;
   final String? language;
   final CircleArea? pickArea;
 
@@ -191,6 +193,11 @@ class GoogleMapPlacePicker extends StatelessWidget {
   Widget _buildGoogleMapInner(PlaceProvider? provider, MapType mapType) {
     CameraPosition initialCameraPosition =
         CameraPosition(target: this.initialTarget, zoom: 15);
+
+    Future<String> _getFileData(String path) async {
+      return rootBundle.loadString(path);
+    }
+
     return GoogleMap(
       zoomGesturesEnabled: this.zoomGesturesEnabled,
       zoomControlsEnabled:
@@ -201,6 +208,7 @@ class GoogleMapPlacePicker extends StatelessWidget {
       initialCameraPosition: initialCameraPosition,
       mapType: mapType,
       myLocationEnabled: true,
+
       circles: pickArea != null && pickArea!.radius > 0
           ? Set<Circle>.from([pickArea])
           : Set<Circle>(),
@@ -209,6 +217,11 @@ class GoogleMapPlacePicker extends StatelessWidget {
         provider.mapController = controller;
         provider.setCameraPosition(null);
         provider.pinState = PinState.Idle;
+
+        if (initialMapStyle!) {
+          _getFileData('assets/map/settings/night_mode.json')
+              .then(provider.mapController!.setMapStyle);
+        }
 
         // When select initialPosition set to true.
         if (selectInitialPosition!) {
@@ -497,7 +510,9 @@ class GoogleMapPlacePicker extends StatelessWidget {
           height: 48,
           child: Center(
             child: Container(
-              child: Text('Select the point'),
+              child: Text(
+                'Select the point',
+              ),
             ),
           ),
         ));
@@ -584,8 +599,8 @@ class GoogleMapPlacePicker extends StatelessWidget {
         children: <Widget>[
           enableMapTypeButton!
               ? Container(
-                  width: 35,
-                  height: 35,
+                  width: 50,
+                  height: 50,
                   child: RawMaterialButton(
                     shape: CircleBorder(),
                     fillColor: Theme.of(context).brightness == Brightness.dark
@@ -600,8 +615,8 @@ class GoogleMapPlacePicker extends StatelessWidget {
           SizedBox(height: 10),
           enableMyLocationButton!
               ? Container(
-                  width: 35,
-                  height: 35,
+                  width: 50,
+                  height: 50,
                   child: RawMaterialButton(
                     shape: CircleBorder(),
                     fillColor: Theme.of(context).brightness == Brightness.dark

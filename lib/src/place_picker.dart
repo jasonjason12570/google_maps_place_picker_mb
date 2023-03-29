@@ -49,8 +49,10 @@ class PlacePicker extends StatefulWidget {
     this.autoCompleteDebounceInMilliseconds = 500,
     this.cameraMoveDebounceInMilliseconds = 750,
     this.initialMapType = MapType.normal,
+    this.initialMapStyle = false,
     this.enableMapTypeButton = true,
     this.enableMyLocationButton = false,
+    this.MyLocationButtonPluginService = false,
     this.myLocationButtonCooldown = 10,
     this.usePinPointingSearch = false,
     this.usePlaceDetailSearch = false,
@@ -98,8 +100,10 @@ class PlacePicker extends StatefulWidget {
   final int cameraMoveDebounceInMilliseconds;
 
   final MapType initialMapType;
+  final bool initialMapStyle;
   final bool enableMapTypeButton;
   final bool enableMyLocationButton;
+  final bool MyLocationButtonPluginService;
   final int myLocationButtonCooldown;
 
   final bool usePinPointingSearch;
@@ -270,6 +274,7 @@ class _PlacePickerState extends State<PlacePicker> {
     provider.sessionToken = Uuid().v4();
     provider.desiredAccuracy = widget.desiredLocationAccuracy;
     provider.setMapType(widget.initialMapType);
+    provider.setMapStyle(widget.initialMapStyle);
     if (widget.useCurrentLocation != null && widget.useCurrentLocation!) {
       await provider.updateCurrentLocation(widget.forceAndroidLocationManager);
     }
@@ -441,6 +446,7 @@ class _PlacePickerState extends State<PlacePicker> {
   }
 
   _moveToCurrentPosition() async {
+    print('_moveToCurrentPosition: ${provider!.currentPosition}');
     if (provider!.currentPosition != null) {
       await _moveTo(provider!.currentPosition!.latitude, provider!.currentPosition!.longitude);
     }
@@ -475,6 +481,7 @@ class _PlacePickerState extends State<PlacePicker> {
       hidePlaceDetailsWhenDraggingPin: widget.hidePlaceDetailsWhenDraggingPin,
       selectText: widget.selectText,
       outsideOfPickAreaText: widget.outsideOfPickAreaText,
+      initialMapStyle: widget.initialMapStyle,
       onToggleMapType: () {
         provider!.switchMapType();
         if (widget.onMapTypeChanged != null) {
@@ -488,8 +495,17 @@ class _PlacePickerState extends State<PlacePicker> {
           Timer(Duration(seconds: widget.myLocationButtonCooldown), () {
             provider!.isOnUpdateLocationCooldown = false;
           });
-          await provider!.updateCurrentLocation(widget.forceAndroidLocationManager);
+          provider!.placeSearchingState = SearchingState.Searching;
+          if (widget.MyLocationButtonPluginService) {
+            // Use Plugin GPS controller
+            await provider!.updateCurrentLocation(widget.forceAndroidLocationManager);
+          } else {
+            // Use App GPS controller
+            //provider!.setCurrentPosition(widget.);
+          }
+
           await _moveToCurrentPosition();
+          provider!.placeSearchingState = SearchingState.Idle;
         }
       },
       onMoveStart: () {

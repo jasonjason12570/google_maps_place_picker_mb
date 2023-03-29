@@ -9,6 +9,7 @@ import 'package:google_maps_webservice/geocoding.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
+import 'package:location/location.dart' as L;
 
 class PlaceProvider extends ChangeNotifier {
   PlaceProvider(
@@ -63,7 +64,7 @@ class PlaceProvider extends ChangeNotifier {
         // requesting permissions again (this is also where
         // Android's shouldShowRequestPermissionRationale
         // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
+        // your App should show an explanatory UI now.o
         return Future.error('Location permissions are denied');
       }
     }
@@ -73,8 +74,31 @@ class PlaceProvider extends ChangeNotifier {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+    print('Pressed');
+    await _getCurrentLocation();
 
     notifyListeners();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    //desiredAccuracy: LocationAccuracy.best would have 10seconds delay
+    Position? position2 = await Geolocator.getLastKnownPosition();
+    print('目前位置： ${position2!.latitude}, ${position2!.longitude}');
+    Position position =
+        await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    String _locationMessage = '目前位置： ${position.latitude}, ${position.longitude}';
+    print(_locationMessage);
+
+    // L.Location location = new L.Location();
+    // L.LocationData _locationData = await location.getLocation();
+    // String _Message = 'location目前位置： ${_locationData.latitude}, ${_locationData.longitude}';
+    // print(_Message);
+
+    double Lng = position.longitude;
+    double Lat = position.latitude;
+
+    setCurrentPosition(position);
   }
 
   Position? _currentPosition;
@@ -82,6 +106,10 @@ class PlaceProvider extends ChangeNotifier {
   set currentPosition(Position? newPosition) {
     _currentPosition = newPosition;
     notifyListeners();
+  }
+
+  setCurrentPosition(currentPosition) {
+    _currentPosition = currentPosition;
   }
 
   Timer? _debounceTimer;
@@ -149,6 +177,13 @@ class PlaceProvider extends ChangeNotifier {
     _mapType = MapType.values[(_mapType.index + 1) % MapType.values.length];
     if (_mapType == MapType.none) _mapType = MapType.normal;
 
+    notifyListeners();
+  }
+
+  bool _mapStyle = false;
+  bool get mapStyle => _mapStyle;
+  setMapStyle(bool mapStyle) {
+    _mapStyle = mapStyle;
     notifyListeners();
   }
 }
