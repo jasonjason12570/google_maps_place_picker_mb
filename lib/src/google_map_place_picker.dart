@@ -417,8 +417,8 @@ class GoogleMapPlacePicker extends StatelessWidget {
           return Container();
         } else {
           return Positioned(
-            bottom: 50,
-            right: 10,
+            bottom: 150,
+            right: 15,
             child: Card(
               elevation: 4.0,
               child: Container(
@@ -496,7 +496,9 @@ class GoogleMapPlacePicker extends StatelessWidget {
   }
 
   Widget _buildSelectionGPS() {
-    return InkWell(
+    return Container(
+      color: initialMapStyle == true ? Colors.white : Colors.grey,
+      child: InkWell(
         onTap: () {
           print("Container clicked");
           PickResultGPS resultGPS = PickResultGPS(latlng: LatLng(123, 123));
@@ -512,10 +514,13 @@ class GoogleMapPlacePicker extends StatelessWidget {
             child: Container(
               child: Text(
                 'Select the point',
+                style: TextStyle(color: initialMapStyle == true ? Colors.black : Colors.white),
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildSelectionDetails(BuildContext context, PickResult? result) {
@@ -593,8 +598,9 @@ class GoogleMapPlacePicker extends StatelessWidget {
     final RenderBox appBarRenderBox =
         appBarKey.currentContext!.findRenderObject() as RenderBox;
     return Positioned(
-      top: appBarRenderBox.size.height,
-      right: 15,
+      //top: appBarRenderBox.size.height,
+      bottom: 150,
+      left: 15,
       child: Column(
         children: <Widget>[
           enableMapTypeButton!
