@@ -74,7 +74,7 @@ class PlaceProvider extends ChangeNotifier {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-    print('Pressed');
+    //print('Pressed');
     await _getCurrentLocation();
 
     notifyListeners();
@@ -82,23 +82,17 @@ class PlaceProvider extends ChangeNotifier {
 
   Future<void> _getCurrentLocation() async {
     //desiredAccuracy: LocationAccuracy.best would have 10seconds delay
-    Position? position2 = await Geolocator.getLastKnownPosition();
-    print('目前位置： ${position2!.latitude}, ${position2!.longitude}');
-    Position position =
-        await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    // Position position =
+    //     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    // Use Last Position instead
 
-    String _locationMessage = '目前位置： ${position.latitude}, ${position.longitude}';
-    print(_locationMessage);
+    // Position position = await Geolocator.getCurrentPosition(
+    //     desiredAccuracy: LocationAccuracy.bestForNavigation);
 
-    // L.Location location = new L.Location();
-    // L.LocationData _locationData = await location.getLocation();
-    // String _Message = 'location目前位置： ${_locationData.latitude}, ${_locationData.longitude}';
-    // print(_Message);
+    // String _locationMessage = 'Plugin - 目前位置： ${position.latitude}, ${position.longitude}';
+    // print(_locationMessage);
 
-    double Lng = position.longitude;
-    double Lat = position.latitude;
-
-    setCurrentPosition(position);
+    // setCurrentPosition(position);
   }
 
   Position? _currentPosition;

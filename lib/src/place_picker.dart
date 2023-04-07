@@ -32,6 +32,7 @@ class PlacePicker extends StatefulWidget {
     this.onPlacePicked,
     this.onPlacePickedByCamera,
     required this.initialPosition,
+    this.streamPosition,
     this.useCurrentLocation,
     this.desiredLocationAccuracy = LocationAccuracy.high,
     this.onMapCreated,
@@ -86,6 +87,7 @@ class PlacePicker extends StatefulWidget {
   final String apiKey;
 
   final LatLng initialPosition;
+  final Position? streamPosition;
   final bool? useCurrentLocation;
   final LocationAccuracy desiredLocationAccuracy;
 
@@ -248,18 +250,26 @@ class _PlacePickerState extends State<PlacePicker> {
   PlaceProvider? provider;
   SearchBarController searchBarController = SearchBarController();
   bool showIntroModal = true;
+  StreamSubscription? _geolocatorStream;
 
   @override
   void initState() {
     super.initState();
 
     _futureProvider = _initPlaceProvider();
+    print('Plugin - Start get GPS');
+
+    _geolocatorStream = Geolocator.getPositionStream().listen((Position position) {
+      print('-Plugin - Position Stream: $position');
+      provider!.setCurrentPosition(position);
+    });
   }
 
   @override
   void dispose() {
+    print('- Plugin - Dispose!');
     searchBarController.dispose();
-
+    _geolocatorStream!.cancel();
     super.dispose();
   }
 
@@ -275,6 +285,11 @@ class _PlacePickerState extends State<PlacePicker> {
     provider.desiredAccuracy = widget.desiredLocationAccuracy;
     provider.setMapType(widget.initialMapType);
     provider.setMapStyle(widget.initialMapStyle);
+    provider.setCurrentPosition(widget.streamPosition);
+    print('- Plugin - get current position = ${provider.currentPosition}');
+    print('- Plugin - get stream position = ${widget.streamPosition}');
+    print('- Plugin - get initial position = ${widget.initialPosition}');
+    print('- Plugin - get selectInitial position = ${widget.selectInitialPosition}');
     if (widget.useCurrentLocation != null && widget.useCurrentLocation!) {
       await provider.updateCurrentLocation(widget.forceAndroidLocationManager);
     }
@@ -358,6 +373,7 @@ class _PlacePickerState extends State<PlacePicker> {
                 onPressed: () {
                   if (!showIntroModal || widget.introModalWidgetBuilder == null) {
                     if (widget.onTapBack != null) {
+                      print('widget.onTapBack != null');
                       widget.onTapBack!();
                       return;
                     }
@@ -482,6 +498,7 @@ class _PlacePickerState extends State<PlacePicker> {
       selectText: widget.selectText,
       outsideOfPickAreaText: widget.outsideOfPickAreaText,
       initialMapStyle: widget.initialMapStyle,
+      streamPosition: widget.streamPosition,
       onToggleMapType: () {
         provider!.switchMapType();
         if (widget.onMapTypeChanged != null) {
@@ -498,10 +515,14 @@ class _PlacePickerState extends State<PlacePicker> {
           provider!.placeSearchingState = SearchingState.Searching;
           if (widget.MyLocationButtonPluginService) {
             // Use Plugin GPS controller
+            print('Plugin GPS controller');
             await provider!.updateCurrentLocation(widget.forceAndroidLocationManager);
           } else {
+            print('App GPS controller');
             // Use App GPS controller
-            //provider!.setCurrentPosition(widget.);
+            // await provider!.setCurrentPosition(widget.streamPosition);
+            // use position listener to set the changes. (See in: _getCurrentLocation)
+            print('currentPosition = ${provider?.currentPosition}');
           }
 
           await _moveToCurrentPosition();
