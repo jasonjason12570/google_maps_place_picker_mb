@@ -250,7 +250,7 @@ class _PlacePickerState extends State<PlacePicker> {
   PlaceProvider? provider;
   SearchBarController searchBarController = SearchBarController();
   bool showIntroModal = true;
-  StreamSubscription? _geolocatorStream;
+  late StreamSubscription _geolocatorStream;
 
   @override
   void initState() {
@@ -258,18 +258,13 @@ class _PlacePickerState extends State<PlacePicker> {
 
     _futureProvider = _initPlaceProvider();
     print('Plugin - Start get GPS');
-
-    _geolocatorStream = Geolocator.getPositionStream().listen((Position position) {
-      print('-Plugin - Position Stream: $position');
-      provider!.setCurrentPosition(position);
-    });
   }
 
   @override
   void dispose() {
     print('- Plugin - Dispose!');
     searchBarController.dispose();
-    _geolocatorStream!.cancel();
+    _geolocatorStream.cancel();
     super.dispose();
   }
 
@@ -293,6 +288,10 @@ class _PlacePickerState extends State<PlacePicker> {
     if (widget.useCurrentLocation != null && widget.useCurrentLocation!) {
       await provider.updateCurrentLocation(widget.forceAndroidLocationManager);
     }
+    _geolocatorStream = Geolocator.getPositionStream().listen((Position position) {
+      print('-Plugin - Position Stream: $position');
+      provider.setCurrentPosition(position);
+    });
     return provider;
   }
 
