@@ -508,9 +508,8 @@ class GoogleMapPlacePicker extends StatelessWidget {
   Widget _defaultPlaceWidgetGPSBuilder(
       BuildContext context, PickResult? data, SearchingState state) {
     return FloatingCard(
-      bottomPosition: MediaQuery.of(context).size.height * 0.2,
-      leftPosition: MediaQuery.of(context).size.width * 0.15,
-      rightPosition: MediaQuery.of(context).size.width * 0.15,
+      topPosition: MediaQuery.of(context).size.height * 0.1,
+      leftPosition: MediaQuery.of(context).size.width * 0.05,
       width: MediaQuery.of(context).size.width * 0.7,
       borderRadius: BorderRadius.circular(12.0),
       elevation: 4.0,
@@ -556,48 +555,48 @@ class GoogleMapPlacePicker extends StatelessWidget {
       child: Container(
         //color: Colors.amber,
         height: 80,
-        child: Center(
-          child: Container(
-            child: Column(
-              children: [
-                Text(
-                  'Now GPS:',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-                Text(
-                  '${nowPosition?.latitude}',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-                Text(
-                  '${nowPosition?.longitude}',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-                Text(
-                  'Camera GPS:',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-                Text(
-                  '${cameraPosition?.latitude}',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-                Text(
-                  '${cameraPosition?.longitude}',
-                  style: TextStyle(
-                      color: initialMapStyle != true ? Colors.black : Colors.white,
-                      fontSize: 10),
-                ),
-              ],
-            ),
+        child: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Now GPS:',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+              Text(
+                '${nowPosition?.latitude}',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+              Text(
+                '${nowPosition?.longitude}',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+              Text(
+                'Camera GPS:',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+              Text(
+                '${cameraPosition?.latitude}',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+              Text(
+                '${cameraPosition?.longitude}',
+                style: TextStyle(
+                    color: initialMapStyle != true ? Colors.black : Colors.white,
+                    fontSize: 10),
+              ),
+            ],
           ),
         ),
       ),
