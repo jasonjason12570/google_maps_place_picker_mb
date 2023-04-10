@@ -281,15 +281,20 @@ class _PlacePickerState extends State<PlacePicker> {
     provider.setMapType(widget.initialMapType);
     provider.setMapStyle(widget.initialMapStyle);
     provider.setCurrentPosition(widget.streamPosition);
-    print('- Plugin - get current position = ${provider.currentPosition}');
-    print('- Plugin - get stream position = ${widget.streamPosition}');
-    print('- Plugin - get initial position = ${widget.initialPosition}');
-    print('- Plugin - get selectInitial position = ${widget.selectInitialPosition}');
+    // print('- Plugin - get current position = ${provider.currentPosition}');
+    // print('- Plugin - get stream position = ${widget.streamPosition}');
+    // print('- Plugin - get initial position = ${widget.initialPosition}');
+    // print('- Plugin - get selectInitial position = ${widget.selectInitialPosition}');
     if (widget.useCurrentLocation != null && widget.useCurrentLocation!) {
       await provider.updateCurrentLocation(widget.forceAndroidLocationManager);
     }
-    _geolocatorStream = Geolocator.getPositionStream().listen((Position position) {
-      print('-Plugin - Position Stream: $position');
+    // Add Location Settings with High accuracy
+    final LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.best,
+    );
+    _geolocatorStream = Geolocator.getPositionStream(locationSettings: locationSettings)
+        .listen((Position position) {
+      // print('-Plugin - Position Stream: $position');
       provider.setCurrentPosition(position);
     });
     return provider;
