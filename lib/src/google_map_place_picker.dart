@@ -195,8 +195,6 @@ class GoogleMapPlacePicker extends StatelessWidget {
   }
 
   Widget _buildGoogleMapInner(PlaceProvider? provider, MapType mapType) {
-    Position? _geolocatorStreamPosition;
-    LatLng? _geolocatorStream;
     CameraPosition? initialCameraPosition =
         CameraPosition(target: this.initialTarget, zoom: 15);
 
@@ -516,7 +514,7 @@ class GoogleMapPlacePicker extends StatelessWidget {
       color: Colors.transparent,
       child: state == SearchingState.Searching
           ? _buildLoadingIndicator()
-          : _buildSelectionGPS(), //_buildSelectionDetails(context, data),
+          : _buildSelectionGPS(context), //_buildSelectionDetails(context, data),
     );
   }
 
@@ -549,7 +547,14 @@ class GoogleMapPlacePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildSelectionGPS() {
+  Widget _buildSelectionGPS(BuildContext context) {
+    cameraPosition = PlaceProvider.of(context, listen: false).cameraPosition?.target;
+    nowPosition = PlaceProvider.of(context, listen: false).currentPosition;
+    // print('${PlaceProvider.of(context, listen: false).currentPosition}');
+    // print('${PlaceProvider.of(context, listen: false).cameraPosition?.target}');
+    // print('');
+    // print('$nowPosition');
+    // print('$cameraPosition');
     return Container(
       color: Colors.transparent,
       child: Container(

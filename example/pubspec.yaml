@@ -29,6 +29,8 @@ dependencies:
 
   google_maps_place_picker_mb:
     path: ../
+  flutter_bloc: ^8.1.2
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:

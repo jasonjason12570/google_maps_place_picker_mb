@@ -43,7 +43,8 @@ class PlaceProvider extends ChangeNotifier {
   LocationAccuracy? desiredAccuracy;
   bool isAutoCompleteSearching = false;
 
-  Future<void> updateCurrentLocation(bool forceAndroidLocationManager) async {
+  Future<void> updateCurrentLocation(
+      bool forceAndroidLocationManager, Position position) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -75,7 +76,8 @@ class PlaceProvider extends ChangeNotifier {
           'Location permissions are permanently denied, we cannot request permissions.');
     }
     //print('Pressed');
-    await _getCurrentLocation();
+    //await _getCurrentLocation();
+    setCurrentPosition(position);
 
     notifyListeners();
   }
@@ -92,7 +94,7 @@ class PlaceProvider extends ChangeNotifier {
     // String _locationMessage = 'Plugin - 目前位置： ${position.latitude}, ${position.longitude}';
     // print(_locationMessage);
 
-    // setCurrentPosition(position);
+    //setCurrentPosition(_position);
   }
 
   Position? _currentPosition;

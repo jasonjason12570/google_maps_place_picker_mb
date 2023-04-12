@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -26,13 +27,15 @@ enum PinState { Preparing, Idle, Dragging }
 enum SearchingState { Idle, Searching }
 
 class PlacePicker extends StatefulWidget {
+  //final Widget Function(BuildContext, StateSetter) builder;
   PlacePicker({
     Key? key,
+    //this.builder,
     required this.apiKey,
     this.onPlacePicked,
     this.onPlacePickedByCamera,
     required this.initialPosition,
-    this.streamPosition,
+    required this.streamPosition,
     this.useCurrentLocation,
     this.desiredLocationAccuracy = LocationAccuracy.high,
     this.onMapCreated,
@@ -87,7 +90,7 @@ class PlacePicker extends StatefulWidget {
   final String apiKey;
 
   final LatLng initialPosition;
-  final Position? streamPosition;
+  final Position streamPosition;
   final bool? useCurrentLocation;
   final LocationAccuracy desiredLocationAccuracy;
 
@@ -240,6 +243,11 @@ class PlacePicker extends StatefulWidget {
   final bool zoomGesturesEnabled;
   final bool zoomControlsEnabled;
 
+  static Position? _streamPosition;
+  static void updateGPS(Position position) {
+    _streamPosition = position;
+  }
+
   @override
   _PlacePickerState createState() => _PlacePickerState();
 }
@@ -250,21 +258,19 @@ class _PlacePickerState extends State<PlacePicker> {
   PlaceProvider? provider;
   SearchBarController searchBarController = SearchBarController();
   bool showIntroModal = true;
-  late StreamSubscription _geolocatorStream;
 
   @override
   void initState() {
     super.initState();
 
     _futureProvider = _initPlaceProvider();
-    print('Plugin - Start get GPS');
   }
 
   @override
   void dispose() {
     print('- Plugin - Dispose!');
     searchBarController.dispose();
-    _geolocatorStream.cancel();
+    //_geolocatorStream.cancel();
     super.dispose();
   }
 
@@ -281,22 +287,25 @@ class _PlacePickerState extends State<PlacePicker> {
     provider.setMapType(widget.initialMapType);
     provider.setMapStyle(widget.initialMapStyle);
     provider.setCurrentPosition(widget.streamPosition);
+    //provider.setCurrentPosition(_position);
     // print('- Plugin - get current position = ${provider.currentPosition}');
     // print('- Plugin - get stream position = ${widget.streamPosition}');
     // print('- Plugin - get initial position = ${widget.initialPosition}');
     // print('- Plugin - get selectInitial position = ${widget.selectInitialPosition}');
     if (widget.useCurrentLocation != null && widget.useCurrentLocation!) {
-      await provider.updateCurrentLocation(widget.forceAndroidLocationManager);
+      await provider.updateCurrentLocation(
+          widget.forceAndroidLocationManager, PlacePicker._streamPosition as Position);
     }
     // Add Location Settings with High accuracy
-    final LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.best,
-    );
-    _geolocatorStream = Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
-      // print('-Plugin - Position Stream: $position');
-      provider.setCurrentPosition(position);
-    });
+    // final LocationSettings locationSettings = LocationSettings(
+    //   accuracy: LocationAccuracy.best,
+    // );
+    // _geolocatorStream = Geolocator.getPositionStream(locationSettings: locationSettings)
+    //     .listen((Position position) {
+    //   // print('-Plugin - Position Stream: $position');
+    //   provider.setCurrentPosition(position);
+    // });
+
     return provider;
   }
 
@@ -481,6 +490,9 @@ class _PlacePickerState extends State<PlacePicker> {
   }
 
   Widget _buildMap(LatLng initialTarget) {
+    // print('_buildMap.streamPosition = ${widget.streamPosition}');
+    // print('_buildMap._streamPosition = ${PlacePicker._streamPosition}');
+    provider?.currentPosition = widget.streamPosition;
     return GoogleMapPlacePicker(
       fullMotion: !widget.resizeToAvoidBottomInset,
       initialTarget: initialTarget,
@@ -519,14 +531,15 @@ class _PlacePickerState extends State<PlacePicker> {
           provider!.placeSearchingState = SearchingState.Searching;
           if (widget.MyLocationButtonPluginService) {
             // Use Plugin GPS controller
-            print('Plugin GPS controller');
-            await provider!.updateCurrentLocation(widget.forceAndroidLocationManager);
+            print('----------Plugin GPS controller----------');
+            await provider!.updateCurrentLocation(
+                widget.forceAndroidLocationManager, PlacePicker._streamPosition as Position);
           } else {
-            print('App GPS controller');
+            print('----------App GPS controller----------');
             // Use App GPS controller
-            // await provider!.setCurrentPosition(widget.streamPosition);
+            await provider!.setCurrentPosition(PlacePicker._streamPosition);
             // use position listener to set the changes. (See in: _getCurrentLocation)
-            print('currentPosition = ${provider?.currentPosition}');
+            //print('currentPosition = ${provider?.currentPosition}');
           }
 
           await _moveToCurrentPosition();
